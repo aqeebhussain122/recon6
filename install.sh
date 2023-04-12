@@ -4,23 +4,21 @@
 check_linux_packages()
 {
 	# Checking the installed packages and seeing the given error code
-	#dpkg --status $1 &> /dev/null
 	dpkg --status | grep -w $1 &> /dev/null
 	# If the error code is 0 then the package is installed, otherwise
 	if [ $? -eq 0 ];
 	then
 		printf "Package $1 exists\n"
 	else
-		printf "I don't have that package, I'll try to install it\n"
-		apt install $1
+		printf "I don't have $1, I'll try to install it\n"
+		sudo apt install $1
 	fi
 }
 
 check_python_packages() 
 {
 	pip3 show $1 &> /dev/null
-	#pip3 list | cut -d ' ' -f 1 | grep -w $1
-
+	
 	# If the package is present, then tell the 
 	if [ $? -eq 0 ];
 	then
@@ -35,8 +33,7 @@ check_python_packages()
 # Test the program by trying to input a package
 
 linux_packages=("python3-pip" "python3")
-python_packages=("dpkt" "scapy" "matplotlib" "subprocess")
-# for loop which accesses the created array and then invokes the check packages function
+python_packages=("dpkt" "scapy")
 printf "Checking for Linux packages\n"
 for linux_package in "${linux_packages[@]}"
 do

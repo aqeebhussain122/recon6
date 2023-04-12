@@ -8,45 +8,33 @@ from signal import signal, SIGINT
 
 
 '''
-	A cleanup function which takes a signal and is recursively called.
-	Signal - Linux signal provided to the signal handler e.g. SIGINT
-	Frame  - Working function which will behave upon the signal. 
+    Signal handler to end sniffing.
 '''
 def signal_handler(signal, frame):
 	print("\n[!] Sniffing ended [!]")
 	sys.exit(0)
 
 
-# Remove the networking monitoring function
-# Create a sniffer function and then implement the file checks
-# Stick it into main so this works as a single component before it needs to be merged later
-
 def network_monitoring(pkt):
 	# Packet count - Dynamic count or static count
-	current_time = datetime.datetime.now()
-	'''
-	for i in range(len(pkt)):
-		print(i)
-	partial solution of counting the number of packets
-	'''
+    current_time = datetime.datetime.now()
+    if pkt.haslayer(TCP):
+        print("\nPacket is TCP")
+        print("Source IP: {}\nDestination IP: {}".format(pkt[IP].src, pkt[IP].dst))
+        print("Source port: {}\nDestination port: {}".format(pkt.sport, pkt.dport))
+        print("MAC: {}".format(getmacbyip(pkt[IP].dst)))
 
-	if pkt.haslayer(TCP):
-		print("\nPacket is TCP")
-		print("Source IP: {}\nDestination IP: {}".format(pkt[IP].src, pkt[IP].dst))
-		print("Source port: {}\nDestination port: {}".format(pkt.sport, pkt.dport))
-	# Test for HTTP inside of the TCP layer
-	
-
-	if pkt.haslayer(HTTPRequest):
+    # Test for HTTP inside of the TCP layer
+    if pkt.haslayer(HTTPRequest):
 		# HTTPRequest is analysed and then URL is printed if it's found.
-		url = pkt[HTTPRequest].Host.decode()
-		print("URL: {}".format(url))
+	    url = pkt[HTTPRequest].Host.decode()
+	    print("URL: {}".format(url))
 
-	if pkt.haslayer(UDP):
-		print("Packet is UDP")
+    if pkt.haslayer(UDP):
+	    print("Packet is UDP")
 
-	if pkt.haslayer(ICMP):
-		print("Packet is ICMP")
+    if pkt.haslayer(ICMP):
+	    print("Packet is ICMP")
 
 	# if pkt.haslayer(HTTPS)
 
