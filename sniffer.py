@@ -14,6 +14,16 @@ def signal_handler(signal, frame):
 	print("\n[!] Sniffing ended [!]")
 	sys.exit(0)
 
+def send_icmpv6():
+    # Make an IPv6 object
+    i = IPv6()
+    # Send a multicast to all IPv6 hosts in the network.
+    i.dst = "ff02::1"
+    # Make a request in order to trigger some behaviour
+    q=ICMPv6EchoRequest()
+    p=(i/q)
+    # Send 100 packets.
+    send(p, count=100)
 
 def network_monitoring(pkt):
 	# Packet count - Dynamic count or static count
