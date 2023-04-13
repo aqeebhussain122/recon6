@@ -21,7 +21,8 @@ Print out info about each packet in the pcap file
   Args:
     pcap: dpkt pcap reader object
 """
-# Processing of a given PCAP file which gets to a CSV file for ML processing
+
+# Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
   packets = 0
   time_list = []
@@ -42,17 +43,14 @@ def process_pcap(pcap):
         continue
       
 	  # We don't care if it's not an IPv6 packet.
-      if eth.type != dpkt.ethernet.ETH_TYPE_IP6:
-        continue
-    
-      print(ip)
       ip = eth.data
 	  # Seems like IPv4 which we probs do not want.
       ip_src_str = socket.inet_ntoa(ip.src)
       ip_dst_str = socket.inet_ntoa(ip.dst)
 
       proto = ip.get_proto(ip.p).__name__
-      ip_details.append(proto, ip_src_str, ip_dst_str)
+      # We want to append a MAC address, the corresponding IPv4 address and source IPv6 address
+      ip_details.append([proto, ip_src_str, ip_dst_str, mac_addr(eth.dst)])
 
       date = str(datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d"))
       time = str(datetime.utcfromtimestamp(timestamp).strftime("%H:%M:%S"))
@@ -66,6 +64,7 @@ def process_pcap(pcap):
   
   print("MACs: {}".format(set(mac_list)))
   print("IP Details: {}".format(ip_details))
+
 
 def test():
   # Open a binary file stream of the pcap file

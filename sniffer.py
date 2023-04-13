@@ -25,6 +25,17 @@ def send_icmpv6():
     # Send 100 packets.
     send(p, count=100)
 
+def in6_addrtomac(addr):
+    # type: (str) -> Optional[str]
+    """
+    Extract the mac address from provided address. None is returned
+    on error.
+    """
+    mask = inet_pton(socket.AF_INET6, "::ffff:ffff:ffff:ffff")
+    x = in6_and(mask, inet_pton(socket.AF_INET6, addr))
+    ifaceid = inet_ntop(socket.AF_INET6, x)[2:]
+    return in6_ifaceidtomac(ifaceid)
+
 def network_monitoring(pkt):
 	# Packet count - Dynamic count or static count
     current_time = datetime.datetime.now()
@@ -42,10 +53,10 @@ def network_monitoring(pkt):
         print(pkt[IPv6].src)
 
 def convert_bytes(size):
-	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
-		if size < 1024.0:
-			return "%3.1f %s" % (size, x)
-		size /= 1024.0
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if size < 1024.0:
+            return "%3.1f %s" % (size, x)
+        size /= 1024.0
 
 # Check the size of a file and if it gets too high then stop writing
 # https://www.gbmb.org/mb-to-bytes
