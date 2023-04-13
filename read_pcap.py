@@ -23,7 +23,7 @@ Print out info about each packet in the pcap file
 
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
-    read_pcap = pyshark.FileCapture(pcap)
+    read_pcap = pyshark.FileCapture(pcap, use_json=True)
     # Dictionary to get an IPv6 addresses and the MAC address.
     ipv6_pkts = {}
 
@@ -47,7 +47,7 @@ def process_pcap(pcap):
     for pkt in read_pcap:
         # ARP details are printed. Would be good to get them printed somehow.
         if "arp" in pkt:
-            print(pkt)
+            print(pkt[1])
 
 def main():
   # Open a binary file stream of the pcap file
