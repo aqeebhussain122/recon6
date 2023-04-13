@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 import dpkt
 import pyshark
-from datetime import datetime
 import socket
-# Helps to get the MAC address
 from dpkt.compat import compat_ord
 
 def mac_addr(address):
@@ -26,16 +24,28 @@ Print out info about each packet in the pcap file
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
     read_pcap = pyshark.FileCapture(pcap)
+    ipv6_pkts = {}
+
     for pkt in read_pcap:
         # Look for all packets which are of a TCP origin before digging into the IP layer.
         if "TCP" and "IPv6" in pkt:
             # Print the IPv6 details of the packet.
             print(pkt.ipv6)
-            # Corresponding MAC, this is all going to need to be parsed though.
-            print(pkt.eth)
+            # Corresponding MAC which needs to be queried via ARP.
+            print(pkt.eth.src)
+            # Add all of the MACs which have been found
+            #pkt_macs.append(pkt.eth.src)
 
+    # All of the MAC addresses collected. 
+    #for i in range(len(pkt_macs)):
+        #print(pkt_macs[i])
 
-# Rework on this with Pyshark.
+    print("IPv4 Addresses")
+ 
+    # Print IPv4 packets with corresponding MACs
+    for ipv4_pkt in read_pcap:
+        if "TCP" and "IP" in ipv4_pkt:
+            print(ipv4_pkt.ip.src, ipv4_pkt.eth.src)
 
 def main():
   # Open a binary file stream of the pcap file
