@@ -32,22 +32,34 @@ def process_pcap(pcap):
         if "TCP" and "IPv6" in pkt:
             # Print the IPv6 details of the packet.
             print(pkt.ipv6)
-            # Corresponding MAC which needs to be queried via ARP.
+            # If we want the source IPv6 address which is what we'll want because the destination is a multicast call to all nodes.
+            print(pkt.ipv6.src)
+            # Corresponding MAC which is retrieved via NDP
             print(pkt.eth.src)
             # Add all of the MACs which have been found
             #pkt_macs.append(pkt.eth.src)
+
+        # We attempt to find our MAC address via packets where ARP is present.
+        if "arp" in pkt:
+            print(pkt[1].src.proto_ipv4)
+            print(pkt[1].src.hw_mac)
 
     # All of the MAC addresses collected. 
     #for i in range(len(pkt_macs)):
         #print(pkt_macs[i])
 
-    print("IPv4 Addresses")
+    #print("IPv4 Addresses")
  
     # Print IPv4 packets with corresponding MACs
-    for pkt in read_pcap:
+    #for pkt in read_pcap:
         # ARP details are printed. Would be good to get them printed somehow.
-        if "arp" in pkt:
-            print(pkt[1])
+    #    if "arp" in pkt:
+            # We can access the packet based on available layers. Layer 0 being Ethernet and Layer 1 being ARP.
+    #        print(pkt[1])
+            
+            # DO NOT ERASE
+            # This will print the IPv4 address. 
+            #print(pkt[1].src.proto_ipv4)
 
 def main():
   # Open a binary file stream of the pcap file
