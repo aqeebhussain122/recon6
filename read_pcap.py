@@ -92,14 +92,19 @@ def compare_mac_addr(pcap):
 
     list_uniq = list(uniq)
     # We want to search this particular value in both dictionaries
-    print(type(list_uniq))
     # This MUST be a list in order to work with join 
+
+    # Need to test with a network of VMs in which there can be several MAC addresses.
     str_uniq = ''.join(list_uniq)
     print("Common MAC address: {}".format(str_uniq))
     print(str_uniq)
     # This works but the string formatting needs to be sorted out.
-    x = ipv6_dict.get("{}".format(str_uniq)) 
-    print(x)
+    get_ipv6_addr = ipv6_dict.get("{}".format(str_uniq)) 
+    get_ipv4_addr = ipv4_dict.get("{}".format(str_uniq)) 
+    
+    # Create a new dictionary appending this in. 
+    print(get_ipv6_addr)
+    print(get_ipv4_addr)
 
     # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
 
