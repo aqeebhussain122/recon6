@@ -29,27 +29,26 @@ def process_pcap(pcap):
     # Dictionary to store the IPv4 address and the corresponding MAC.
     ipv4_pkts = {}
 
-    # We want to compare 
-
     for pkt in read_pcap:
         # Look for all packets which are of a TCP origin before digging into the IP layer.
         if "TCP" and "IPv6" in pkt:
             # Print the IPv6 details of the packet as a whole.
-            print(pkt.ipv6)
+            #print(pkt.ipv6)
             # If we want the source IPv6 address which is what we'll want because the destination is a multicast call to all nodes.
-            print(pkt.ipv6.src) # We want to append this to a dictionary. Key.
             src_ipv6 = pkt.ipv6.src # We want to store this in a variable and then store it in our dictionary.
-            src_mac = pkt.eth.src
-            ipv6_pkts['{}'.format(src_ipv6)] = pkt.eth.src
+            src_ndp_mac = pkt.eth.src  # We want to store this in a variable and then store it in our dictionary.
+            ipv6_pkts['{}'.format(src_ipv6)] = src_ndp_mac
             # Corresponding MAC which is retrieved via NDP
-            print(pkt.eth.src) # We want to append this to a dictionary. Value. 
             # Add all of the MACs which have been found
             #pkt_macs.append(pkt.eth.src)
 
         # We attempt to find our MAC address via packets where ARP is present.
         if "arp" in pkt:
-            print(pkt[1].src.proto_ipv4)
-            print(pkt[1].src.hw_mac)
+            pass
+            src_ipv4 = pkt[1].src.proto.ipv4
+            src_arp_mac = 
+            #print(pkt[1].src.proto_ipv4)
+            #print(pkt[1].src.hw_mac)
 
     
     print(ipv6_pkts)
