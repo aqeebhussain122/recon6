@@ -48,13 +48,14 @@ def process_pcap(pcap):
             src_ipv4 = pkt[1].src.proto_ipv4
             src_arp_mac = pkt[1].src.hw_mac
             ipv4_pkts['{}'.format(src_ipv4)] = src_arp_mac
-            #print(pkt[1].src.proto_ipv4)
-            #print(pkt[1].src.hw_mac)
-
     
     # Print the dictionaries we need.
-    print(ipv6_pkts)
-    print(ipv4_pkts)
+    #print(ipv6_pkts)
+    #print(ipv4_pkts)
+
+    # We can return the two dicts from the function in order to talk to them in other functions.
+    return ipv6_pkts, ipv4_pkts
+
     # All of the MAC addresses collected. 
     #for i in range(len(pkt_macs)):
         #print(pkt_macs[i])
@@ -72,13 +73,26 @@ def process_pcap(pcap):
             # This will print the IPv4 address. 
             #print(pkt[1].src.proto_ipv4)
 
-def comp_macs():
-    pass
+def compare_mac_addr():
+    # Get the MAC addresses from IPv6 dict.
+    # Get the MAC addresses from IPv4 dict
+    ipv6_dict, ipv4_dict = process_pcap('pyshark-test.pcapng')
+
+    ipv4_macs = ipv6_dict.values()
+    ipv6_macs = ipv4_dict.values()
+
+    res = set(ipv6_macs).intersection(set(ipv4_macs))
+    print("Common MAC address: {}".format(str(list(res))))
+    
+    # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
+    return 
 
 def main():
   # Open a binary file stream of the pcap file
   with open('pyshark-test.pcapng', 'rb') as f:
     process_pcap('pyshark-test.pcapng')
+
+  print(compare_mac_addr())
 
 if __name__ == '__main__':
   main()
