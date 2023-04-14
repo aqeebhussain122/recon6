@@ -39,7 +39,10 @@ def process_pcap(pcap):
             # If we want the source IPv6 address which is what we'll want because the destination is a multicast call to all nodes.
             src_ipv6 = pkt.ipv6.src # We want to store this in a variable and then store it in our dictionary.
             src_ndp_mac = pkt.eth.src  # We want to store this in a variable and then store it in our dictionary.
-            ipv6_pkts['{}'.format(src_ipv6)] = src_ndp_mac
+            #ipv6_pkts['{}'.format(src_ipv6)] = src_ndp_mac
+            
+            # SWAPPED.
+            ipv6_pkts['{}'.format(src_ndp_mac)] = src_ipv6
             # Corresponding MAC which is retrieved via NDP
             # Add all of the MACs which have been found
 
@@ -47,7 +50,11 @@ def process_pcap(pcap):
         if "arp" in pkt:
             src_ipv4 = pkt[1].src.proto_ipv4
             src_arp_mac = pkt[1].src.hw_mac
-            ipv4_pkts['{}'.format(src_ipv4)] = src_arp_mac
+
+            #ipv4_pkts['{}'.format(src_ipv4)] = src_arp_mac
+            
+            # SWAPPED.
+            ipv4_pkts['{}'.format(src_arp_mac)] = src_ipv4
     
     # Print the dictionaries we need.
     #print(ipv6_pkts)
@@ -74,24 +81,28 @@ def process_pcap(pcap):
             #print(pkt[1].src.proto_ipv4)
 
 def compare_mac_addr(pcap):
-    # Get the MAC addresses from IPv6 dict.
-    # Get the MAC addresses from IPv4 dict
+    # Whole dictionary contained (items)
     ipv6_dict, ipv4_dict = process_pcap(pcap)
 
-    ipv4_macs = ipv6_dict.values()
-    ipv6_macs = ipv4_dict.values()
+    ipv4_macs = ipv6_dict.keys()
+    ipv6_macs = ipv4_dict.keys()
 
     print(ipv6_macs, ipv4_macs)
-    res = set(ipv6_macs).intersection(set(ipv4_macs))
+    uniq = set(ipv6_macs).intersection(set(ipv4_macs))
 
-    print("Common MAC address: {}".format(str(list(res))))
-    str_res = str(res)
+    list_uniq = list(uniq)
+    # We want to search this particular value in both dictionaries
+    print(type(list_uniq))
+    # This MUST be a list in order to work with join 
+    str_uniq = ''.join(list_uniq)
+    print("Common MAC address: {}".format(str_uniq))
+    print(str_uniq)
+    # This works but the string formatting needs to be sorted out.
+    x = ipv6_dict.get("{}".format(str_uniq)) 
+    print(x)
 
-    value = {i for i in ipv6_macs if ipv6_macs[i]==str_res}
-    print("key by value:",value)
     # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
 
-    
 
 def main():
   pcap = 'test-capture.pcapng'
@@ -103,3 +114,5 @@ def main():
 
 if __name__ == '__main__':
   main()
+
+# https://www.w3schools.com/python/python_dictionaries_access.asp
