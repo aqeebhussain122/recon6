@@ -26,16 +26,23 @@ def process_pcap(pcap):
     read_pcap = pyshark.FileCapture(pcap, use_json=True)
     # Dictionary to get an IPv6 addresses and the MAC address.
     ipv6_pkts = {}
+    # Dictionary to store the IPv4 address and the corresponding MAC.
+    ipv4_pkts = {}
+
+    # We want to compare 
 
     for pkt in read_pcap:
         # Look for all packets which are of a TCP origin before digging into the IP layer.
         if "TCP" and "IPv6" in pkt:
-            # Print the IPv6 details of the packet.
+            # Print the IPv6 details of the packet as a whole.
             print(pkt.ipv6)
             # If we want the source IPv6 address which is what we'll want because the destination is a multicast call to all nodes.
-            print(pkt.ipv6.src)
+            print(pkt.ipv6.src) # We want to append this to a dictionary. Key.
+            src_ipv6 = pkt.ipv6.src # We want to store this in a variable and then store it in our dictionary.
+            src_mac = pkt.eth.src
+            ipv6_pkts['{}'.format(src_ipv6)] = pkt.eth.src
             # Corresponding MAC which is retrieved via NDP
-            print(pkt.eth.src)
+            print(pkt.eth.src) # We want to append this to a dictionary. Value. 
             # Add all of the MACs which have been found
             #pkt_macs.append(pkt.eth.src)
 
@@ -44,6 +51,8 @@ def process_pcap(pcap):
             print(pkt[1].src.proto_ipv4)
             print(pkt[1].src.hw_mac)
 
+    
+    print(ipv6_pkts)
     # All of the MAC addresses collected. 
     #for i in range(len(pkt_macs)):
         #print(pkt_macs[i])
@@ -60,6 +69,9 @@ def process_pcap(pcap):
             # DO NOT ERASE
             # This will print the IPv4 address. 
             #print(pkt[1].src.proto_ipv4)
+
+def comp_macs():
+    pass
 
 def main():
   # Open a binary file stream of the pcap file
