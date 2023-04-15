@@ -15,12 +15,6 @@ def mac_addr(address):
     """
     return ':'.join('%02x' % compat_ord(b) for b in address)
 
-"""
-Print out info about each packet in the pcap file
-  Args:
-    pcap: dpkt pcap reader object
-"""
-
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
     # We use JSON to help us know the field names of the fields to print for our tools
@@ -81,13 +75,14 @@ def process_pcap(pcap):
             #print(pkt[1].src.proto_ipv4)
 
 def compare_mac_addr(pcap):
+    ip_addrs = []
     # Whole dictionary contained (items)
     ipv6_dict, ipv4_dict = process_pcap(pcap)
 
+    # Call the keys from the dictionaries.
     ipv4_macs = ipv6_dict.keys()
     ipv6_macs = ipv4_dict.keys()
 
-    print(ipv6_macs, ipv4_macs)
     uniq = set(ipv6_macs).intersection(set(ipv4_macs))
 
     list_uniq = list(uniq)
@@ -98,14 +93,20 @@ def compare_mac_addr(pcap):
     str_uniq = ''.join(list_uniq)
     print("Common MAC address: {}".format(str_uniq))
     print(str_uniq)
-    # This works but the string formatting needs to be sorted out.
+    # This grabs the two fields we need which correspond to the same MAC.
     get_ipv6_addr = ipv6_dict.get("{}".format(str_uniq)) 
     get_ipv4_addr = ipv4_dict.get("{}".format(str_uniq)) 
     
     # Create a new dictionary appending this in. 
-    print(get_ipv6_addr)
-    print(get_ipv4_addr)
+    print(get_ipv4_addr)    
 
+    ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
+    print(ip_mac_dict)
+    # str_uniq becomes the key for two different values
+    #ip_mac_dict['{}'.format(get_ipv4_addr)] = str_uniq
+    #ip_mac_dict['{}'.format(get_ipv6_addr)] = str_uniq
+    
+    
     # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
 
 
@@ -121,3 +122,4 @@ if __name__ == '__main__':
   main()
 
 # https://www.w3schools.com/python/python_dictionaries_access.asp
+# https://stackoverflow.com/questions/5946236/how-to-merge-dicts-collecting-values-from-matching-keys
