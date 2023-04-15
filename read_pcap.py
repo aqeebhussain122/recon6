@@ -100,23 +100,28 @@ def compare_mac_addr(pcap):
     # Create a new dictionary appending this in. 
     print(get_ipv4_addr)    
 
+    # For each unique MAC we find, we have to make a new key and a corresponding list entry.
     ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
-    print(ip_mac_dict)
+    
+    #print(type(ip_mac_dict))
+    #print(ip_mac_dict[str_uniq])
     # str_uniq becomes the key for two different values
     #ip_mac_dict['{}'.format(get_ipv4_addr)] = str_uniq
     #ip_mac_dict['{}'.format(get_ipv6_addr)] = str_uniq
     
+    return ip_mac_dict
     
     # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
 
 
-def main():
-  pcap = 'test-capture.pcapng'
-  # Open a binary file stream of the pcap file
-  with open(pcap, 'rb') as f:
-    process_pcap(pcap)
 
-  print(compare_mac_addr(pcap))
+def main():
+    pcap = 'test-capture.pcapng'
+    # Open a binary file stream of the pcap file
+    with open(pcap, 'rb') as f:
+        process_pcap(pcap)
+
+    print(compare_mac_addr(pcap))
 
 if __name__ == '__main__':
   main()
