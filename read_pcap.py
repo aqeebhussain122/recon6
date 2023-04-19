@@ -110,6 +110,8 @@ def compare_mac_addr(pcap):
             print(get_ipv4_addr)
             print(get_ipv6_addr)
 
+            # Turn this into a JSON dict and then return it. Or maybe XML. Idk.
+
     # Create a new dictionary appending this in. 
 
     #ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
@@ -128,7 +130,7 @@ def compare_mac_addr(pcap):
 
 
 def main():
-    pcap = 'icmpv6.pcapng'
+    pcap = 'pyshark-test.pcapng'
     # Open a binary file stream of the pcap file
     with open(pcap, 'rb') as f:
         process_pcap(pcap)
