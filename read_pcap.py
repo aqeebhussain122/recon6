@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import dpkt
 import pyshark
-import socket
 from dpkt.compat import compat_ord
 
 def mac_addr(address):
@@ -14,6 +13,11 @@ def mac_addr(address):
            str: Printable/readable MAC address
     """
     return ':'.join('%02x' % compat_ord(b) for b in address)
+
+# Currently parsing a PCAP file, upgrade intended to sniff live packets and then process these in real time.
+# Perform a ping sweep to populate the ARP table
+
+# More steps available from the training slides.
 
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
@@ -75,7 +79,6 @@ def process_pcap(pcap):
             #print(pkt[1].src.proto_ipv4)
 
 def compare_mac_addr(pcap):
-    ip_addrs = []
     # Whole dictionary contained (items)
     ipv6_dict, ipv4_dict = process_pcap(pcap)
 
@@ -86,12 +89,13 @@ def compare_mac_addr(pcap):
     uniq = set(ipv6_macs).intersection(set(ipv4_macs))
 
     list_uniq = list(uniq)
-    print(len(list_uniq))
+    list_len = len(list_uniq)
     # We want to search this particular value in both dictionaries
     # This MUST be a list in order to work with join
 
     # Need to test with a network of VMs in which there can be several MAC addresses.
-    if len(list_uniq) == 1:
+    """
+    if list_len == 1:
         str_uniq = ''.join(list_uniq)
         print("Common MAC address: {}\n".format(str_uniq))
         print(str_uniq)
@@ -100,17 +104,46 @@ def compare_mac_addr(pcap):
         get_ipv4_addr = ipv4_dict.get("{}".format(str_uniq)) 
         print(get_ipv4_addr)
         print(get_ipv6_addr)
-        #ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
+        ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
+        return ip_mac_dict
 
-    if len(list_uniq) > 1:
+    if list_len > 1:
         for i in list_uniq:
             get_ipv6_addr = ipv6_dict.get("{}".format(i))
             get_ipv4_addr = ipv4_dict.get("{}".format(i))
             print(i)
             print(get_ipv4_addr)
             print(get_ipv6_addr)
+    """
+    ip_mac_list = []
+    if list_len == 1:
+        str_uniq = ''.join(list_uniq)
+        print("Common MAC address: {}".format(str_uniq))
+        print(str_uniq)
+        # This grabs the two fields we need which correspond to the same MAC.
+        get_ipv6_addr = ipv6_dict.get("{}".format(str_uniq)) 
+        get_ipv4_addr = ipv4_dict.get("{}".format(str_uniq)) 
+        print(get_ipv4_addr)
+        print(get_ipv6_addr)
+        ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
+        # Return this piece of info which then gets written to a file for further parsing.
+        return ip_mac_dict
 
-            # Turn this into a JSON dict and then return it. Or maybe XML. Idk.
+    elif list_len > 1:
+        for i in list_uniq:
+            get_ipv6_addr = ipv6_dict.get("{}".format(i))
+            get_ipv4_addr = ipv4_dict.get("{}".format(i))
+            print(i)
+            print(get_ipv4_addr)
+            print(get_ipv6_addr)
+            ip_mac_dict = {'{}'.format(i): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
+            #ip_mac_dict['{}'.format(i)].append(['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)])
+            ip_mac_list.append(ip_mac_dict)
+
+    # Wrap all of the individual dicts into a whole list which can then get parsed and written to a file
+    return ip_mac_list
+
+    # JSON or XML? Idk yet.
 
     # Create a new dictionary appending this in. 
 
@@ -130,7 +163,7 @@ def compare_mac_addr(pcap):
 
 
 def main():
-    pcap = 'pyshark-test.pcapng'
+    pcap = 'test-capture.pcapng'
     # Open a binary file stream of the pcap file
     with open(pcap, 'rb') as f:
         process_pcap(pcap)
