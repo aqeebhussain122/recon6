@@ -160,7 +160,9 @@ def compare_mac_addr(pcap):
     
     # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
 
-
+# Parse the info from being a list of dicts to something like XML or JSON and then passing this data to an appropriate tool to perform some scans.
+def parse_macs(pcap):
+    macs = compare_mac_addr
 
 def main():
     pcap = 'test-capture.pcapng'
@@ -168,7 +170,10 @@ def main():
     with open(pcap, 'rb') as f:
         process_pcap(pcap)
 
-    print(compare_mac_addr(pcap))
+    comp = compare_mac_addr(pcap)
+    parse = parse_macs(pcap)
+
+    print(parse)
 
 if __name__ == '__main__':
   main()
