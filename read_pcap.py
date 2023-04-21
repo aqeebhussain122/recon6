@@ -118,6 +118,8 @@ def compare_mac_addr(pcap):
             print(get_ipv4_addr)
             print(get_ipv6_addr)
     """
+
+    # Could mebs refactor this part.
     ip_mac_list = []
     if list_len == 1:
         str_uniq = ''.join(list_uniq)
@@ -182,6 +184,7 @@ def parse_macs(pcap):
             
         #data = {'aa':[{'ipv4': '{}'.format(mac[0]), 'ipv6':'{}'.format(mac[1])}]}
 
+    # Need this to write to a file, returning the file as a result which then goes into read_json 
     data_json = json.dumps(json_list, sort_keys = True, indent = 4)
 
     return data_json
