@@ -20,6 +20,8 @@ def mac_addr(address):
 
 # More steps available from the training slides.
 
+# Adjust the process code so it can allow sniffing depending on what arg parse says.
+
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
     # We use JSON to help us know the field names of the fields to print for our tools
@@ -182,7 +184,6 @@ def parse_macs(pcap):
 
     data_json = json.dumps(json_list, sort_keys = True, indent = 4)
 
-
     return data_json
     """
     for mac in macs:
@@ -208,6 +209,8 @@ def read_json(json_file):
             for vals in val:
                 # We want to grab these addresses and potentially send them to NMAP
                 print(vals['ipv6_address'])
+
+                # Potentially return the IPv6 addresses in a list which can then get unpacked elsewhere in order to be scanned via NMAP.
 
 
 def main():
