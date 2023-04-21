@@ -194,13 +194,20 @@ def parse_macs(pcap):
 
 # Read our JSON file in order to pick out exactly what we might need in order to pass through to other tools in the pipeline 
 def read_json(json_file):
+    # Read the JSON file through a file stream and then load the incoming data via json library.
     with open(json_file, 'r') as j:
         contents = json.loads(j.read())
 
+    # Loop through the content of the file 
     for content in contents:
-        keys = content.keys()
-        for key in keys:
-            print(content[key])
+        # Dynamic items so that we can access the keys and values together.
+        dynamic_items = content.items()
+        # Loop through the key and value, we only want the value to scope down on it.
+        for key, val in dynamic_items:
+            # Access the values individually and pull out the exact value we want which is the IPv6 address
+            for vals in val:
+                # We want to grab these addresses and potentially send them to NMAP
+                print(vals['ipv6_address'])
 
 
 def main():
