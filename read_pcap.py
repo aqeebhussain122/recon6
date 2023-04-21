@@ -192,6 +192,17 @@ def parse_macs(pcap):
             ipv6 = val[1]
     """
 
+# Read our JSON file in order to pick out exactly what we might need in order to pass through to other tools in the pipeline 
+def read_json(json_file):
+    with open(json_file, 'r') as j:
+        contents = json.loads(j.read())
+
+    for content in contents:
+        keys = content.keys()
+        for key in keys:
+            print(content[key])
+
+
 def main():
     pcap = 'test-capture.pcapng'
     # Open a binary file stream of the pcap file
@@ -201,6 +212,8 @@ def main():
 #    comp = compare_mac_addr(pcap)
     parse = parse_macs(pcap)
     print(parse)
+
+    read = read_json('test.json')
 
 if __name__ == '__main__':
   main()
