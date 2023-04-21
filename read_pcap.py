@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import dpkt
 import pyshark
+import json
 from dpkt.compat import compat_ord
 
 def mac_addr(address):
@@ -162,7 +163,34 @@ def compare_mac_addr(pcap):
 
 # Parse the info from being a list of dicts to something like XML or JSON and then passing this data to an appropriate tool to perform some scans.
 def parse_macs(pcap):
-    macs = compare_mac_addr
+    macs = compare_mac_addr(pcap)
+    #data = {'1':[{'ipv4_address': '2', 'ipv6_address': '3'}]}
+    #print(json.dumps(data, sort_keys = True, indent = 4))
+
+    json_list = []
+    # Access the individual dicts stored within the list.
+    for mac in macs:
+        # Access the key and value stored in each individual dict.
+        for key, val in mac.items():
+            mac_addr = key
+            ipv4 = val[0]
+            ipv6 = val[1]
+            data = {'{}'.format(mac_addr):[{'ipv4_address': '{}'.format(ipv4), 'ipv6_address': '{}'.format(ipv6)}]}
+            json_list.append(data)
+            
+        #data = {'aa':[{'ipv4': '{}'.format(mac[0]), 'ipv6':'{}'.format(mac[1])}]}
+
+    data_json = json.dumps(json_list, sort_keys = True, indent = 4)
+
+
+    return data_json
+    """
+    for mac in macs:
+        for key, val in mac.items():
+            # Make a JSON variable which will append all of the data into itself.
+            ipv4 = val[0]
+            ipv6 = val[1]
+    """
 
 def main():
     pcap = 'test-capture.pcapng'
@@ -170,9 +198,8 @@ def main():
     with open(pcap, 'rb') as f:
         process_pcap(pcap)
 
-    comp = compare_mac_addr(pcap)
+#    comp = compare_mac_addr(pcap)
     parse = parse_macs(pcap)
-
     print(parse)
 
 if __name__ == '__main__':
