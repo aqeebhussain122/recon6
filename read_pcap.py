@@ -23,20 +23,16 @@ Send ARP/NDP (ping6) packets to the targets.
 # Will add a parameter which will be added as part of the hosts.
 def send_arp_pkts():
     # Make a scanner.
-	nmScanner = nmap.PortScanner()
-    # Once a list of params are pulled in, make the list compatible.
-    compatible_list = ', '.join(read)
+    nmScanner = nmap.PortScanner()
+    # Once a list of params are pulled in, make the list compatible like this...
+    #compatible_list = ', '.join(read)
 	# ARP scan.
-	nmScanner.scan(hosts='192.168.0.0/24', arguments='-n -sP -PR')
-	all_hosts = nmScanner.all_hosts()
-	for host in nmScanner.all_hosts():
-		print("Host: %s" % (host))
-		print('State : %s' % nmScanner[host].state())
-
+    nmScanner.scan(hosts='192.168.0.0/24', arguments='-n -sP -PR')
+    all_hosts = nmScanner.all_hosts()
+    for host in all_hosts:
+	    print("Host: %s" % (host))
+	    print('State : %s' % nmScanner[host].state())
     
-    # Seems like comma's are supported.
-    nmScanner.scan(compatible_list, '21-443')
-
 
 # Currently parsing a PCAP file, upgrade intended to sniff live packets and then process these in real time.
 # Perform a ping sweep to populate the ARP table
@@ -49,6 +45,9 @@ def send_arp_pkts():
 def process_pcap(pcap):
     # We use JSON to help us know the field names of the fields to print for our tools
     read_pcap = pyshark.FileCapture(pcap, use_json=True)
+
+    # FileCapture needs to be replaced with a sniffer to improve the automation workflow.
+
     # Dictionary to get an IPv6 addresses and the MAC address via NDP.
     ipv6_pkts = {}
     # Dictionary to store the IPv4 address and the corresponding MAC via ARP.
