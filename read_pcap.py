@@ -2,6 +2,7 @@
 import dpkt
 import pyshark
 import json
+import nmap
 from dpkt.compat import compat_ord
 
 def mac_addr(address):
@@ -14,6 +15,9 @@ def mac_addr(address):
            str: Printable/readable MAC address
     """
     return ':'.join('%02x' % compat_ord(b) for b in address)
+
+def send_arp_pkts():
+    pass
 
 # Currently parsing a PCAP file, upgrade intended to sniff live packets and then process these in real time.
 # Perform a ping sweep to populate the ARP table
@@ -198,10 +202,10 @@ def parse_macs(pcap):
 
 # Read our JSON file in order to pick out exactly what we might need in order to pass through to other tools in the pipeline 
 def read_json(json_file):
+    ipv6_addrs = []
     # Read the JSON file through a file stream and then load the incoming data via json library.
     with open(json_file, 'r') as j:
         contents = json.loads(j.read())
-
     # Loop through the content of the file 
     for content in contents:
         # Dynamic items so that we can access the keys and values together.
@@ -211,10 +215,28 @@ def read_json(json_file):
             # Access the values individually and pull out the exact value we want which is the IPv6 address
             for vals in val:
                 # We want to grab these addresses and potentially send them to NMAP
-                print(vals['ipv6_address'])
+                #print(vals['ipv6_address'])
+                ipv6_addrs.append(vals['ipv6_address'])
+    
+    # Return IPv6 addresses in a list which can then get unpacked in order to be scanned via NMAP.
+    return ipv6_addrs
 
-                # Potentially return the IPv6 addresses in a list which can then get unpacked elsewhere in order to be scanned via NMAP.
+# Perform an NMAP scan on all of the identified addresses.
+# Active function which does the scanning.
+def scan_ipv6():
+    read = read_json('test.json')
+    # Spawn a scanner
+    nmScanner = nmap.PortScanner()
+    # use it.
+    compatible_list = ', '.join(read)
+    
+    # Seems like comma's are supported.
+    nmScanner.scan(compatible_list, '21-443')
 
+	# run a loop to print all the found result about the ports
+    for host in nmScanner.all_hosts():
+    	print('Host : %s (%s)' % (host, nmScanner[host].hostname()))
+    	print('State : %s' % nmScanner[host].state())
 
 def main():
     pcap = 'test-capture.pcapng'
@@ -222,12 +244,9 @@ def main():
     with open(pcap, 'rb') as f:
         process_pcap(pcap)
 
-#    comp = compare_mac_addr(pcap)
+    # comp = compare_mac_addr(pcap)
     parse = parse_macs(pcap)
-    print(parse)
-
-    read = read_json('test.json')
-
+    
 if __name__ == '__main__':
   main()
 
