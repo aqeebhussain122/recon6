@@ -35,7 +35,7 @@ check_python_packages()
 # Test the program by trying to input a package
 
 linux_packages=("python3-pip" "python3" "scapy")
-python_packages=("dpkt" "pyshark")
+python_packages=("dpkt" "pyshark" "nmap")
 # for loop which accesses the created array and then invokes the check packages function
 printf "Checking for Linux packages\n"
 for linux_package in "${linux_packages[@]}"
