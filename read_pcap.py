@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import subprocess
 import dpkt
 import pyshark
 import json
@@ -20,14 +21,15 @@ def mac_addr(address):
 Send ARP/NDP (ping6) packets to the targets.
 '''
 
+# This function is meant to send ARP packets to the designated subnet as part of the automated scanning phase.
 # Will add a parameter which will be added as part of the hosts.
-def send_arp_pkts():
+def send_arp_pkts(target_subnet):
     # Make a scanner.
     nmScanner = nmap.PortScanner()
     # Once a list of params are pulled in, make the list compatible like this...
     #compatible_list = ', '.join(read)
-	# ARP scan.
-    nmScanner.scan(hosts='192.168.0.0/24', arguments='-n -sP -PR')
+    # ARP scan. NMAP based pings aren't sent to Wireshark needs to be investigated.
+    nmScanner.scan(hosts='{}'.format(target_subnet), arguments='-n -sP -PR')
     all_hosts = nmScanner.all_hosts()
     for host in all_hosts:
 	    print("Host: %s" % (host))
@@ -36,8 +38,6 @@ def send_arp_pkts():
 
 # Currently parsing a PCAP file, upgrade intended to sniff live packets and then process these in real time.
 # Perform a ping sweep to populate the ARP table
-
-# More steps available from the training slides.
 
 # Adjust the process code so it can allow sniffing depending on what arg parse says.
 
@@ -58,7 +58,6 @@ def process_pcap(pcap):
         if "TCP" and "IPv6" in pkt:
             # Print the IPv6 details of the packet as a whole.
             #print(pkt.ipv6)
-            
             # If we want the source IPv6 address which is what we'll want because the destination is a multicast call to all nodes.
             src_ipv6 = pkt.ipv6.src # We want to store this in a variable and then store it in our dictionary.
             src_ndp_mac = pkt.eth.src  # We want to store this in a variable and then store it in our dictionary.
@@ -90,8 +89,6 @@ def process_pcap(pcap):
     #for i in range(len(pkt_macs)):
         #print(pkt_macs[i])
 
-    #print("IPv4 Addresses")
- 
     # Print IPv4 packets with corresponding MACs
     #for pkt in read_pcap:
         # ARP details are printed. Would be good to get them printed somehow.
@@ -103,6 +100,7 @@ def process_pcap(pcap):
             # This will print the IPv4 address. 
             #print(pkt[1].src.proto_ipv4)
 
+# This is to tie the MACs from v4 and v6 together.
 def compare_mac_addr(pcap):
     # Whole dictionary contained (items)
     ipv6_dict, ipv4_dict = process_pcap(pcap)
@@ -118,40 +116,17 @@ def compare_mac_addr(pcap):
     # We want to search this particular value in both dictionaries
     # This MUST be a list in order to work with join
 
-    # Need to test with a network of VMs in which there can be several MAC addresses.
-    """
-    if list_len == 1:
-        str_uniq = ''.join(list_uniq)
-        print("Common MAC address: {}\n".format(str_uniq))
-        print(str_uniq)
-        # This grabs the two fields we need which correspond to the same MAC.
-        get_ipv6_addr = ipv6_dict.get("{}".format(str_uniq)) 
-        get_ipv4_addr = ipv4_dict.get("{}".format(str_uniq)) 
-        print(get_ipv4_addr)
-        print(get_ipv6_addr)
-        ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
-        return ip_mac_dict
-
-    if list_len > 1:
-        for i in list_uniq:
-            get_ipv6_addr = ipv6_dict.get("{}".format(i))
-            get_ipv4_addr = ipv4_dict.get("{}".format(i))
-            print(i)
-            print(get_ipv4_addr)
-            print(get_ipv6_addr)
-    """
-
     # Could mebs refactor this part.
     ip_mac_list = []
     if list_len == 1:
         str_uniq = ''.join(list_uniq)
-        print("Common MAC address: {}".format(str_uniq))
-        print(str_uniq)
+        #print("Common MAC address: {}".format(str_uniq))
+        #print(str_uniq)
         # This grabs the two fields we need which correspond to the same MAC.
         get_ipv6_addr = ipv6_dict.get("{}".format(str_uniq)) 
         get_ipv4_addr = ipv4_dict.get("{}".format(str_uniq)) 
-        print(get_ipv4_addr)
-        print(get_ipv6_addr)
+        #print(get_ipv4_addr)
+        #print(get_ipv6_addr)
         ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
         # Return this piece of info which then gets written to a file for further parsing.
         return ip_mac_dict
@@ -160,19 +135,14 @@ def compare_mac_addr(pcap):
         for i in list_uniq:
             get_ipv6_addr = ipv6_dict.get("{}".format(i))
             get_ipv4_addr = ipv4_dict.get("{}".format(i))
-            print(i)
-            print(get_ipv4_addr)
-            print(get_ipv6_addr)
+            #print(i)
+            #print(get_ipv4_addr)
+            #print(get_ipv6_addr)
             ip_mac_dict = {'{}'.format(i): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
-            #ip_mac_dict['{}'.format(i)].append(['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)])
             ip_mac_list.append(ip_mac_dict)
 
     # Wrap all of the individual dicts into a whole list which can then get parsed and written to a file
     return ip_mac_list
-
-    # JSON or XML? Idk yet.
-
-    # Create a new dictionary appending this in. 
 
     #ip_mac_dict = {'{}'.format(str_uniq): ['{}'.format(get_ipv4_addr), '{}'.format(get_ipv6_addr)]}
     #print(ip_mac_dict)
@@ -185,38 +155,31 @@ def compare_mac_addr(pcap):
     
     #return ip_mac_dict
     
-    # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as an XML file.
+    # We want to search for the value discovered with the corresponding key on each side so that we can map the link local IPv6 and IPv4 addresses together. We can then create a new dict which can be returned from this function and perhaps dumped as JSON.
 
 # Parse the info from being a list of dicts to something like XML or JSON and then passing this data to an appropriate tool to perform some scans.
 def parse_macs(pcap):
     macs = compare_mac_addr(pcap)
-    #data = {'1':[{'ipv4_address': '2', 'ipv6_address': '3'}]}
-    #print(json.dumps(data, sort_keys = True, indent = 4))
 
     json_list = []
     # Access the individual dicts stored within the list.
-    for mac in macs:
-        # Access the key and value stored in each individual dict.
-        for key, val in mac.items():
-            mac_addr = key
-            ipv4 = val[0]
-            ipv6 = val[1]
-            data = {'{}'.format(mac_addr):[{'ipv4_address': '{}'.format(ipv4), 'ipv6_address': '{}'.format(ipv6)}]}
-            json_list.append(data)
-            
-        #data = {'aa':[{'ipv4': '{}'.format(mac[0]), 'ipv6':'{}'.format(mac[1])}]}
 
+    # If there's more than one MAC found making it "macs"...
+    if len(macs) > 1:
+        for mac in macs:
+        # Access the key and value stored in each individual dict.
+            for key, val in mac.items():
+                mac_addr = key
+                ipv4 = val[0]
+                ipv6 = val[1]
+                # MAC address is tied to an IPv4/IPv6 address.
+                data = {'{}'.format(mac_addr):[{'ipv4_address': '{}'.format(ipv4), 'ipv6_address': '{}'.format(ipv6)}]}
+                json_list.append(data)
+            
     # Need this to write to a file, returning the file as a result which then goes into read_json 
     data_json = json.dumps(json_list, sort_keys = True, indent = 4)
-
+ 
     return data_json
-    """
-    for mac in macs:
-        for key, val in mac.items():
-            # Make a JSON variable which will append all of the data into itself.
-            ipv4 = val[0]
-            ipv6 = val[1]
-    """
 
 # Read our JSON file in order to pick out exactly what we might need in order to pass through to other tools in the pipeline 
 def read_json(json_file):
@@ -233,41 +196,77 @@ def read_json(json_file):
             # Access the values individually and pull out the exact value we want which is the IPv6 address
             for vals in val:
                 # We want to grab these addresses and potentially send them to NMAP
-                #print(vals['ipv6_address'])
                 ipv6_addrs.append(vals['ipv6_address'])
-    
+
     # Return IPv6 addresses in a list which can then get unpacked in order to be scanned via NMAP.
     return ipv6_addrs
 
 # Perform an NMAP scan on all of the identified addresses.
 # Active function which does the scanning.
+# This needs to be edited heavily!
 def scan_ipv6():
-    read = read_json('test.json')
+    #read = read_json('ipv6_targets.txt')
     # Spawn a scanner
     nmScanner = nmap.PortScanner()
-    # use it.
-    compatible_list = ', '.join(read)
-    
-    # Seems like comma's are supported.
-    nmScanner.scan(compatible_list, '21-443')
+    with open('ipv6_targets.txt', 'r') as ipv6_targets:
+        for ipv6_target in ipv6_targets:
+            # Pass for now...
+            pass
+            """
+            nmScanner.scan(hosts=ipv6_target, arguments='-vvv -sT -n -Pn -T4 -6')
+            print('Host : %s (%s)' % (ipv6_target, nmScanner[ipv6_target[:-1]].hostname()))
+            print('State : %s' % nmScanner[ipv6_target].state())
+            print(nmScanner.command_line())
+            """
+
+    # This needs work!            
+    print("Performing NMAP scan")
+
 
 	# run a loop to print all the found result about the ports
-    for host in nmScanner.all_hosts():
-    	print('Host : %s (%s)' % (host, nmScanner[host].hostname()))
-    	print('State : %s' % nmScanner[host].state())
+#    for host in nmScanner.all_hosts():
+#    	print('Host : %s (%s)' % (host, nmScanner[host].hostname()))
+#    	print('State : %s' % nmScanner[host].state())
 
 def main():
-    pcap = 'test-capture.pcapng'
+    pcap = 'test-2.pcapng'
     # Open a binary file stream of the pcap file
     with open(pcap, 'rb') as f:
         process_pcap(pcap)
 
-    # comp = compare_mac_addr(pcap)
+    # Raw JSON.
+    comp = compare_mac_addr(pcap)
+    
+    # Clean JSON.
     parse = parse_macs(pcap)
-    arp = send_arp_pkts()
+    print(parse)
+    with open('test.json', 'w') as f:
+        f.write(parse)
+
+    # This function was written to send the IPv6 files to NMAP.
+    #json = read_json('test.json')
+    # Returns for the IPv6 addresses which can be manually scanned.
+    #print(json)
+
+    #This is for active scanning.
+    #arp = send_arp_pkts('192.168.0.0/24')
+
 
 if __name__ == '__main__':
   main()
 
 # https://www.w3schools.com/python/python_dictionaries_access.asp
 # https://stackoverflow.com/questions/5946236/how-to-merge-dicts-collecting-values-from-matching-keys
+
+"""
+This needs to be refactored later...
+#primary_interface = subprocess.Popen("ip route list | grep -i default | awk {'print $5'}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    #primary_interface.communicate()
+    #print(primary_interface)
+
+    # I need the primary network interface
+    with open('ipv6_targets.txt', 'a') as f:
+        for ipv6 in ipv6_addrs:
+            f.write(ipv6 + '\n')
+            #f.write(ipv6 + '%' + '{}'.format(primary_interface) + '\n')
+"""
