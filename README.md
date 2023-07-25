@@ -9,4 +9,4 @@ Information: The product is still under development with only the informational 
 Once this data has been captured, proceed to use recon6 with the syntax of: 
 `python3 read_pcap.py -i test-2.pcapng`
 
-If you have packages which are not installed, please refer to the install.sh
+If you have packages which are not installed for this software, please run the `install.sh` installation script which will install required packages.
