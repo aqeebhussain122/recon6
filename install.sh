@@ -2,19 +2,20 @@
 
 # Needs a bit more work done.
 
-# Checks a list of given packages
 check_linux_packages()
 {
 	# Checking the installed packages and seeing the given error code
 	#dpkg --status $1 &> /dev/null
-	dpkg --status | grep -w $1 &> /dev/null
+        #apt-get list --installed | grep -w $1 &> /dev/null
+        apt-cache show $1 | grep -i installed &> /dev/null
+	#dpkg --status | grep -w $1 &> /dev/null
 	# If the error code is 0 then the package is installed, otherwise
 	if [ $? -eq 0 ];
 	then
 		printf "Package $1 exists\n"
 	else
 		printf "I don't have that package, I'll try to install it\n"
-		sudo apt install -y $1
+		sudo apt-get install -y $1
 	fi
 }
 
