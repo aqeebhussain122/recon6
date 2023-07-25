@@ -7,26 +7,11 @@ import json
 import nmap
 import argparse
 from dpkt.compat import compat_ord
+from scapy.all import *
 
-'''
-def mac_addr(address):
-    """
-	Convert a MAC address to a readable/printable string
 
-       Args:
-           address (str): a MAC address in hex form (e.g. '\x01\x02\x03\x04\x05\x06')
-       Returns:
-           str: Printable/readable MAC address
-    """
-    return ':'.join('%02x' % compat_ord(b) for b in address)
-'''
+# Still need this code to send ARP packets via NMAP because it's faster.
 
-'''
-Send ARP/NDP (ping6) packets to the targets.
-'''
-
-# This function is meant to send ARP packets to the designated subnet as part of the automated scanning phase.
-# Will add a parameter which will be added as part of the hosts.
 def send_arp_pkts(target_subnet):
     # Make a scanner.
     nmScanner = nmap.PortScanner()
@@ -36,21 +21,26 @@ def send_arp_pkts(target_subnet):
     nmScanner.scan(hosts='{}'.format(target_subnet), arguments='-n -sP -PR')
     all_hosts = nmScanner.all_hosts()
     for host in all_hosts:
-	    print("Host: %s" % (host))
-	    print('State : %s' % nmScanner[host].state())
-    
+        print("Host: %s" % (host))
+        print('State : %s' % nmScanner[host].state())
 
-# Currently parsing a PCAP file, upgrade intended to sniff live packets and then process these in real time.
-# Perform a ping sweep to populate the ARP table
 
-# Adjust the process code so it can allow sniffing depending on what arg parse says.
+# Sniff out ARP/NDP traffic as filter which will be used in scapy.
+def pkt_display(pkt):
+    # If the traffic is of type ARP.
+    if pkt[ARP].op == 1:  # who-has (request)
+        return f"Request: {pkt[ARP].psrc} is asking about {pkt[ARP].pdst}"
+    if pkt[ARP].op == 2:  # is-at (response)
+        return f"*Response: {pkt[ARP].hwsrc} has address {pkt[ARP].psrc}"
+
+'''
+Send ARP/NDP (ping6) packets to the targets.
+'''
 
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
     # We use JSON to help us know the field names of the fields to print for our tools
     read_pcap = pyshark.FileCapture(pcap, use_json=True)
-
-    # FileCapture needs to be replaced with a sniffer to improve the automation workflow.
 
     # Dictionary to get an IPv6 addresses and the MAC address via NDP.
     ipv6_pkts = {}
@@ -198,6 +188,8 @@ def read_json(json_file):
                 # We want to grab these addresses and potentially send them to NMAP
                 ipv6_addrs.append(vals['ipv6_address'])
 
+    # Close the file stream.
+    j.close()
     # Return IPv6 addresses in a list which can then get unpacked in order to be scanned via NMAP.
     return ipv6_addrs
 
@@ -218,6 +210,7 @@ def scan_ipv6():
             print('State : %s' % nmScanner[ipv6_target].state())
             print(nmScanner.command_line())
             """
+    ipv6_targets.close()
 
     # This needs work!            
     print("Performing NMAP scan")
@@ -235,6 +228,7 @@ def main():
     # Finished component
     group.add_argument("-i", "--informational", help="Queries the PCAP file provided for the IPv4/IPv6 addresses tied with their MAC addresses.", action='store_true')
     parser.add_argument("capture_file", nargs='?', help='Capture file which should contain packets of ARP/ICMPv6 traffic.', type=str)
+    parser.add_argument("--subnet", nargs='?', help='Subnet to send ARP packets to.', type=str)
     # Needs more work.
     group.add_argument("-s", "--scan", help="Actively scan the network sending the required packets and automating IPv4/IPv6 scanning. (This is still under development)", action='store_true')
     args = parser.parse_args()
@@ -254,6 +248,8 @@ def main():
         print(parse)
         with open('test.json', 'w') as f:
             f.write(parse)
+        
+        f.close()
 
         # This function was written to send the IPv6 files to NMAP.
         #json = read_json('test.json')
@@ -263,12 +259,17 @@ def main():
          #arp = send_arp_pkts('192.168.0.0/24')
 
     # This option needs more work.
+    # Put the code into a while true loop with a signal handler to kill it.
+    # Send NDP/ARP traffic via this option. Filter it out and grab the packets needed.
+    # Write the traffic to a PCAP.
+    # Read the PCAP using the informational functions and write it to a JSON file.
+    # Once the JSON file has been written 
     if args.scan:
-         # Needs another optional argument as a subnet
-         json = read_json('test.json')
-         print(json)
-         arp = send_arp_pkts('127.0.0.1/32')
-     
+         pkts = sniff(prn=pkt_display, filter="arp", iface='ens33', store=0, count=1000)
+         print("Sending ARP packets.")
+         arp = send_arp_pkts(args.subnet) 
+         print(arp)
+         print(pkts.summary())
 
 if __name__ == '__main__':
   main()
