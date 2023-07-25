@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Needs a bit more work done.
+
 # Checks a list of given packages
 check_linux_packages()
 {
@@ -34,8 +36,8 @@ check_python_packages()
 # Checking if the exact given package is firstly installed or not and if it is then skip it, if not then try to install it
 # Test the program by trying to input a package
 
-linux_packages=("python3-pip" "python3" "scapy")
-python_packages=("dpkt" "pyshark" "nmap")
+linux_packages=("python3-pip" "python3" "scapy" "tshark")
+python_packages=("dpkt" "pyshark" "python-nmap")
 # for loop which accesses the created array and then invokes the check packages function
 printf "Checking for Linux packages\n"
 for linux_package in "${linux_packages[@]}"
