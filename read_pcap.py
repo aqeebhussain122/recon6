@@ -1,11 +1,14 @@
 #!/usr/bin/python3
+import sys
 import subprocess
 import dpkt
 import pyshark
 import json
 import nmap
+import argparse
 from dpkt.compat import compat_ord
 
+'''
 def mac_addr(address):
     """
 	Convert a MAC address to a readable/printable string
@@ -16,6 +19,7 @@ def mac_addr(address):
            str: Printable/readable MAC address
     """
     return ':'.join('%02x' % compat_ord(b) for b in address)
+'''
 
 '''
 Send ARP/NDP (ping6) packets to the targets.
@@ -78,10 +82,6 @@ def process_pcap(pcap):
             # SWAPPED.
             ipv4_pkts['{}'.format(src_arp_mac)] = src_ipv4
     
-    # Print the dictionaries we need.
-    #print(ipv6_pkts)
-    #print(ipv4_pkts)
-
     # We can return the two dicts from the function in order to talk to them in other functions.
     return ipv6_pkts, ipv4_pkts
 
@@ -229,28 +229,46 @@ def scan_ipv6():
 #    	print('State : %s' % nmScanner[host].state())
 
 def main():
-    pcap = 'test-2.pcapng'
-    # Open a binary file stream of the pcap file
-    with open(pcap, 'rb') as f:
-        process_pcap(pcap)
+    parser = argparse.ArgumentParser(description='SYN Scan and flood tool which forms raw packets taking required IP addresses and port numbers')
+    # -i and -s cannot be launched together.
+    group = parser.add_mutually_exclusive_group(required=True)
+    # Finished component
+    group.add_argument("-i", "--informational", help="Queries the PCAP file provided for the IPv4/IPv6 addresses tied with their MAC addresses.", action='store_true')
+    parser.add_argument("capture_file", nargs='?', help='Capture file which should contain packets of ARP/ICMPv6 traffic.', type=str)
+    # Needs more work.
+    group.add_argument("-s", "--scan", help="Actively scan the network sending the required packets and automating IPv4/IPv6 scanning. (This is still under development)", action='store_true')
+    args = parser.parse_args()
 
-    # Raw JSON.
-    comp = compare_mac_addr(pcap)
+    # The -i option.
+    if args.informational:
+        # Quick fix to make the arg parsing a bit more flexible.
+        if len(sys.argv) == 2:
+            raise Exception("I need a capture file to proceed!")
+            
+        pcap = args.capture_file
+        # Raw JSON.
+        comp = compare_mac_addr(pcap)
     
-    # Clean JSON.
-    parse = parse_macs(pcap)
-    print(parse)
-    with open('test.json', 'w') as f:
-        f.write(parse)
+        # Clean JSON.
+        parse = parse_macs(pcap)
+        print(parse)
+        with open('test.json', 'w') as f:
+            f.write(parse)
 
-    # This function was written to send the IPv6 files to NMAP.
-    #json = read_json('test.json')
-    # Returns for the IPv6 addresses which can be manually scanned.
-    #print(json)
+        # This function was written to send the IPv6 files to NMAP.
+        #json = read_json('test.json')
+        # Returns for the IPv6 addresses which can be manually scanned.
 
-    #This is for active scanning.
-    #arp = send_arp_pkts('192.168.0.0/24')
+        #This is for active scanning.
+         #arp = send_arp_pkts('192.168.0.0/24')
 
+    # This option needs more work.
+    if args.scan:
+         # Needs another optional argument as a subnet
+         json = read_json('test.json')
+         print(json)
+         arp = send_arp_pkts('127.0.0.1/32')
+     
 
 if __name__ == '__main__':
   main()
