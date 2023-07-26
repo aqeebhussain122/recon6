@@ -1,6 +1,6 @@
 # recon6 - (IPv6 Sniffing Tool)
 
-Description: Recon6 is a network sniffer using various Python libraries such as Scapy and PyShark in order to locate link local IPv6 addresses.
+Description: Recon6 is a network sniffer using various Python libraries such as Scapy and PyShark in order to locate link local IPv6 addresses within an internal network.
 
 # Initial release: 25/07/2023
 
