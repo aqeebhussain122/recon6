@@ -253,9 +253,10 @@ def main():
              signal(SIGINT, sniffer.signal_handler)
          #sniffer.signal_handler(SIGINT, sniffer.signal_handler)
              while True:
+                 # Filter might need to be expanded. (filter=arp)
                  pkts = sniff(prn=sniffer.network_monitoring, filter="arp", iface='ens33', timeout=10)
                  write_file = wrpcap('sniffed.pcap', pkts, append=True)
-                 print("File size: {}".format(sniffer.check_file_size('sniffed.pcap')))
+
          #print("Sending ARP packets.")
          #arp = send_arp_pkts(args.subnet) 
          #print(arp)
