@@ -23,7 +23,9 @@ def main():
     # Needs more work.
     group.add_argument("-s", "--scan", help="Actively scan the network sending the required packets and automating IPv4/IPv6 scanning. (This is still under development)", action='store_true')
     args = parser.parse_args()
+    pcap = args.capture_file
 
+    readPCAP = read_pcap.readPCAP(pcap)
     # The -i option.
     if args.informational:
         # Quick fix to make the arg parsing a bit more flexible.
@@ -32,10 +34,10 @@ def main():
             
         pcap = args.capture_file
         # Raw JSON.
-        comp = read_pcap.compare_mac_addr(pcap)
+        comp = readPCAP.compare_mac_addr()
     
         # Clean JSON.
-        parse = read_pcap.parse_macs(pcap)
+        parse = readPCAP.parse_macs()
         print(parse)
         # JSON file produced to take away.
         with open('test.json', 'w') as f:
