@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import sniffer
 import sys
 import subprocess
 import dpkt
@@ -6,12 +7,13 @@ import pyshark
 import json
 import nmap
 import argparse
+from signal import signal, SIGINT
 from dpkt.compat import compat_ord
 from scapy.all import *
 
 
 # Still need this code to send ARP packets via NMAP because it's faster.
-
+# Might house this elsewhere to make this a processing only file
 def send_arp_pkts(target_subnet):
     # Make a scanner.
     nmScanner = nmap.PortScanner()
@@ -23,19 +25,6 @@ def send_arp_pkts(target_subnet):
     for host in all_hosts:
         print("Host: %s" % (host))
         print('State : %s' % nmScanner[host].state())
-
-
-# Sniff out ARP/NDP traffic as filter which will be used in scapy.
-def pkt_display(pkt):
-    # If the traffic is of type ARP.
-    if pkt[ARP].op == 1:  # who-has (request)
-        return f"Request: {pkt[ARP].psrc} is asking about {pkt[ARP].pdst}"
-    if pkt[ARP].op == 2:  # is-at (response)
-        return f"*Response: {pkt[ARP].hwsrc} has address {pkt[ARP].psrc}"
-
-'''
-Send ARP/NDP (ping6) packets to the targets.
-'''
 
 # Processing of a given PCAP file to present detected link local IPv6 addresses
 def process_pcap(pcap):
@@ -215,12 +204,6 @@ def scan_ipv6():
     # This needs work!            
     print("Performing NMAP scan")
 
-
-	# run a loop to print all the found result about the ports
-#    for host in nmScanner.all_hosts():
-#    	print('Host : %s (%s)' % (host, nmScanner[host].hostname()))
-#    	print('State : %s' % nmScanner[host].state())
-
 def main():
     parser = argparse.ArgumentParser(description='SYN Scan and flood tool which forms raw packets taking required IP addresses and port numbers')
     # -i and -s cannot be launched together.
@@ -265,11 +248,20 @@ def main():
     # Read the PCAP using the informational functions and write it to a JSON file.
     # Once the JSON file has been written 
     if args.scan:
-         pkts = sniff(prn=pkt_display, filter="arp", iface='ens33', store=0, count=1000)
-         print("Sending ARP packets.")
-         arp = send_arp_pkts(args.subnet) 
-         print(arp)
-         print(pkts.summary())
+         print("[!] Sniffing begins... [!]")
+         try:
+             signal(SIGINT, sniffer.signal_handler)
+         #sniffer.signal_handler(SIGINT, sniffer.signal_handler)
+             while True:
+                 pkts = sniff(prn=sniffer.network_monitoring, filter="arp", iface='ens33', timeout=10)
+                 write_file = wrpcap('sniffed.pcap', pkts, append=True)
+                 print("File size: {}".format(sniffer.check_file_size('sniffed.pcap')))
+         #print("Sending ARP packets.")
+         #arp = send_arp_pkts(args.subnet) 
+         #print(arp)
+                 print(pkts.summary())
+         except KeyboardInterrupt:
+              sys.exit(0)
 
 if __name__ == '__main__':
   main()
