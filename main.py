@@ -37,9 +37,11 @@ def main():
         # Clean JSON.
         parse = read_pcap.parse_macs(pcap)
         print(parse)
+        # JSON file produced to take away.
         with open('test.json', 'w') as f:
             f.write(parse)
-        
+
+        # Closing of file streams to keep things clean
         f.close()
 
         # This function was written to send the IPv6 files to NMAP.
@@ -64,10 +66,6 @@ def main():
                  # Filter might need to be expanded. (filter=arp)
                  pkts = sniff(prn=sniffer.network_monitoring, filter="arp", iface='ens33', timeout=10)
                  write_file = wrpcap('sniffed.pcap', pkts, append=True)
-
-         #print("Sending ARP packets.")
-         #arp = send_arp_pkts(args.subnet) 
-         #print(arp)
                  print(pkts.summary())
          except KeyboardInterrupt:
               sys.exit(0)
@@ -77,16 +75,3 @@ if __name__ == '__main__':
 
 # https://www.w3schools.com/python/python_dictionaries_access.asp
 # https://stackoverflow.com/questions/5946236/how-to-merge-dicts-collecting-values-from-matching-keys
-
-"""
-This needs to be refactored later...
-#primary_interface = subprocess.Popen("ip route list | grep -i default | awk {'print $5'}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #primary_interface.communicate()
-    #print(primary_interface)
-
-    # I need the primary network interface
-    with open('ipv6_targets.txt', 'a') as f:
-        for ipv6 in ipv6_addrs:
-            f.write(ipv6 + '\n')
-            #f.write(ipv6 + '%' + '{}'.format(primary_interface) + '\n')
-"""
