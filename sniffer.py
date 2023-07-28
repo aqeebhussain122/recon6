@@ -7,8 +7,8 @@ import time
 from signal import signal, SIGINT
 
 class capture_file:
-    def __init__(self, file_size = 0, cap_file = None):
-        self.file_size = file_size
+    def __init__(self, max_size = 0, cap_file = None):
+        self.max_size = max_size
         self.cap_file = cap_file
      
     # Make a function independent parameter to make it "one size fits all"
@@ -24,30 +24,28 @@ class capture_file:
     # Check the size of a file and if it gets too high then stop writing
     # https://www.gbmb.org/mb-to-bytes
     def check_file_size(self):
-        # Get the biggest size of the file which is 1GB
-        MAX_SIZE = self.convert_bytes(1073741824)
+        # Get the biggest size of the file which is what we declare.
+        MAX_SIZE = self.convert_bytes(self.max_size)
         
-        # Check it is a file.
-        if os.path.isfile(self.cap_file):
+        # Check it is a file before we do anything and then check if it's even a PCAP or not...
+        if os.path.isfile(self.cap_file) and self.cap_file.endswith(".pcap") or self.cap_file.endswith(".pcapng"):
+            # We get the base information from the capture file.
             file_info = os.stat(self.cap_file)
-            #file_size = file_info.st_size
-            # Get the file size.
-            self.file_size = file_info.st_size
-		    # File size condition is done here
-		    #if file_size < 1073741824:
+            # The file size is internally calculated which we grab from "file_info"
+            file_size = file_info.st_size
 
-        if self.file_size < 1073741824:
-            print("File size is less than {}".format(MAX_SIZE))
-        else:
-            print("Wiping capture file...")
-            os.system("rm {} && touch {}".format(self.cap_file, self.cap_file))
+            # If the internal size is less than our declared limit.
+            if file_size < self.max_size:
+                # Tell us this.
+                print("File size is less than {}".format(MAX_SIZE))
+            # If it's not.
+            else:
+                # Wipe and ta ta bye bye.
+                print("Wiping capture file...")
+                os.system("rm {} && touch {}".format(self.cap_file, self.cap_file))
 			    # Wipe thenhe capture echo file and then start again
 
-        return self.convert_bytes(self.file_size)
-	    #else:
-	#	    print("A file was not provided")
-	#	    return 1
-
-	    # Might need to uncomment later.
-	    #return file_info
-
+            # Perform everything based on whether it's a file.
+            return self.convert_bytes(file_size)
+        else:
+            raise Exception("The file is not compatible!")
