@@ -6,52 +6,47 @@ import os
 import time
 from signal import signal, SIGINT
 
-'''
-	A cleanup function which takes a signal and is recursively called.
-	Signal - Linux signal provided to the signal handler e.g. SIGINT
-	Frame  - Working function which will behave upon the signal. 
-'''
-def signal_handler(signal, frame):
-	print("\n[!] Sniffing ended [!]")
-	sys.exit(0)
+class capture_file:
+    def __init__(self, file_size = 0, cap_file = None):
+        self.file_size = file_size
+        self.cap_file = cap_file
+     
+    def convert_bytes(self):
+        for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+            if self.file_size < 1024.0:
+                return "%3.1f %s" % (self.file_size, x)
+            
+            self.file_size /= 1024.0
 
+        return self.file_size
 
-# Remove the networking monitoring function
-# Create a sniffer function and then implement the file checks
-# Stick it into main so this works as a single component before it needs to be merged later
+    # Check the size of a file and if it gets too high then stop writing
+    # https://www.gbmb.org/mb-to-bytes
+    def check_file_size(self):
+        # Get the biggest size of the file which is 1GB
+        MAX_SIZE = self.convert_bytes()
+        
+        # Check it is a file.
+        if os.path.isfile(self.cap_file):
+            file_info = os.stat(self.cap_file)
+            #file_size = file_info.st_size
+            # Get the file size.
+            self.file_size = file_info.st_size
+		    # File size condition is done here
+		    #if file_size < 1073741824:
 
-def network_monitoring(pkt):
-    # If the traffic is of type ARP.
-    if pkt[ARP].op == 1:  # who-has (request)
-        return f"Request: {pkt[ARP].psrc} is asking about {pkt[ARP].pdst}"
-    if pkt[ARP].op == 2:  # is-at (response)
-        return f"*Response: {pkt[ARP].hwsrc} has address {pkt[ARP].psrc}"
+        if self.file_size < 1073741824:
+            print("File size is less than {}".format(MAX_SIZE))
+        else:
+            print("Wiping capture file...")
+            os.system("rm {} && touch {}".format(self.cap_file, self.cap_file))
+			    # Wipe thenhe capture echo file and then start again
 
-def convert_bytes(size):
-	for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
-		if size < 1024.0:
-			return "%3.1f %s" % (size, x)
-		size /= 1024.0
+        return self.convert_bytes()
+	    #else:
+	#	    print("A file was not provided")
+	#	    return 1
 
-# Check the size of a file and if it gets too high then stop writing
-# https://www.gbmb.org/mb-to-bytes
-def check_file_size(cap_file):
-	MAX_SIZE = convert_bytes(1073741824)
-	if os.path.isfile(cap_file):
-		file_info = os.stat(cap_file)
-		file_size = file_info.st_size
-		# File size condition is done here
-		if file_size < 1073741824:
-			print("File size is less than {}".format(MAX_SIZE))
-		else:
-			print("Wiping capture file...")
-			os.system("rm {} && touch {}".format(cap_file, cap_file))
-			# Wipe the capture echo file and then start again
-		return convert_bytes(file_size)
-	else:
-		print("A file was not provided")
-		return 1
-
-	# Might need to uncomment later.
-	#return file_info
+	    # Might need to uncomment later.
+	    #return file_info
 
