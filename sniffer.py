@@ -11,20 +11,21 @@ class capture_file:
         self.file_size = file_size
         self.cap_file = cap_file
      
-    def convert_bytes(self):
+    # Make a function independent parameter to make it "one size fits all"
+    def convert_bytes(self, size):
         for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
-            if self.file_size < 1024.0:
-                return "%3.1f %s" % (self.file_size, x)
+            if size < 1024.0:
+                return "%3.1f %s" % (size, x)
             
-            self.file_size /= 1024.0
+            size /= 1024.0
 
-        return self.file_size
+        return size
 
     # Check the size of a file and if it gets too high then stop writing
     # https://www.gbmb.org/mb-to-bytes
     def check_file_size(self):
         # Get the biggest size of the file which is 1GB
-        MAX_SIZE = self.convert_bytes()
+        MAX_SIZE = self.convert_bytes(1073741824)
         
         # Check it is a file.
         if os.path.isfile(self.cap_file):
@@ -42,7 +43,7 @@ class capture_file:
             os.system("rm {} && touch {}".format(self.cap_file, self.cap_file))
 			    # Wipe thenhe capture echo file and then start again
 
-        return self.convert_bytes()
+        return self.convert_bytes(self.file_size)
 	    #else:
 	#	    print("A file was not provided")
 	#	    return 1
