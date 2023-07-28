@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import sniffer
 import sys
 import subprocess
 import dpkt

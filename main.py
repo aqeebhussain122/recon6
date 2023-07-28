@@ -9,7 +9,7 @@ import argparse
 from signal import signal, SIGINT
 from dpkt.compat import compat_ord
 from scapy.all import *
-import sniffer
+import capture_pcap
 import read_pcap
 
 def main():
@@ -71,7 +71,7 @@ def main():
                  # This contains the maximum value.
 
                  # We need to turn these into argparse args at some point...
-                 capture_file = sniffer.capture_file(1073741824, args.write_file)
+                 capture_file = capture_pcap.capture_file(1073741824, args.write_file)
                  print(capture_file.check_file_size())
          except KeyboardInterrupt:
               sys.exit(0)
