@@ -62,13 +62,12 @@ def main():
     if args.scan:
          print("[!] Sniffing begins... [!]")
          try:
-             signal(SIGINT, sniffer.signal_handler)
          #sniffer.signal_handler(SIGINT, sniffer.signal_handler)
              while True:
                  # Filter might need to be expanded. (filter=arp)
-                 pkts = sniff(prn=sniffer.network_monitoring, filter="arp", iface='ens33', timeout=10)
-                 write_file = wrpcap('sniffed.pcap', pkts, append=True)
-                 print(pkts.summary())
+                 # This contains the maximum value.
+                 capture_file = sniffer.capture_file(1073741824, 'test-2.pcapng')
+                 print(capture_file.check_file_size())
          except KeyboardInterrupt:
               sys.exit(0)
 
