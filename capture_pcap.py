@@ -6,6 +6,10 @@ import os
 import time
 from signal import signal, SIGINT
 
+'''
+   As data is being sniffed via the scan option, the capture_file class will write the data to a file, whilst monitoring its size to make sure it doesn't go overboard.
+'''
+
 class capture_file:
     def __init__(self, max_size = 0, cap_file = None):
         self.max_size = max_size
@@ -40,9 +44,7 @@ class capture_file:
                 print("File size is less than {}".format(MAX_SIZE))
             # If it's not.
             else:
-                # Wipe and ta ta bye bye.
-                print("Wiping capture file...")
-                os.system("rm {} && touch {}".format(self.cap_file, self.cap_file))
+                return "File size is too big"
 			    # Wipe thenhe capture echo file and then start again
 
             # Perform everything based on whether it's a file.
