@@ -11,7 +11,7 @@ class capture_file:
         self.max_size = max_size
         self.cap_file = cap_file
      
-    # Make a function independent parameter to make it "one size fits all"
+    # Make a function independent parameter called 'size' to make it "one size fits all"
     def convert_bytes(self, size):
         for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
             if size < 1024.0:

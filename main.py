@@ -18,7 +18,10 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     # Finished component
     group.add_argument("-i", "--informational", help="Queries the PCAP file provided for the IPv4/IPv6 addresses tied with their MAC addresses.", action='store_true')
+    # This is for informational capture.
     parser.add_argument("capture_file", nargs='?', help='Capture file which should contain packets of ARP/ICMPv6 traffic.', type=str)
+    # This is for writing to a file.
+    parser.add_argument("--write-file", nargs='?', help='New file which will contain packets of sniffed traffic.', type=str)
     parser.add_argument("--subnet", nargs='?', help='Subnet to send ARP packets to.', type=str)
     # Needs more work.
     group.add_argument("-s", "--scan", help="Actively scan the network sending the required packets and automating IPv4/IPv6 scanning. (This is still under development)", action='store_true')
@@ -66,7 +69,9 @@ def main():
              while True:
                  # Filter might need to be expanded. (filter=arp)
                  # This contains the maximum value.
-                 capture_file = sniffer.capture_file(1073741824, 'test-2.pcapng')
+
+                 # We need to turn these into argparse args at some point...
+                 capture_file = sniffer.capture_file(1073741824, args.write_file)
                  print(capture_file.check_file_size())
          except KeyboardInterrupt:
               sys.exit(0)
