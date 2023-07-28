@@ -11,6 +11,7 @@ from dpkt.compat import compat_ord
 from scapy.all import *
 import capture_pcap
 import read_pcap
+import sniffer
 
 def main():
     parser = argparse.ArgumentParser(description='SYN Scan and flood tool which forms raw packets taking required IP addresses and port numbers')
@@ -73,6 +74,8 @@ def main():
                  # We need to turn these into argparse args at some point...
                  capture_file = capture_pcap.capture_file(1073741824, args.write_file)
                  print(capture_file.check_file_size())
+                 
+                 pkts = sniff(prn=sniffer.sniffer.network_monitoring, filter="arp", iface='ens33', timeout=10) 
          except KeyboardInterrupt:
               sys.exit(0)
 
